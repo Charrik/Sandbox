@@ -1,0 +1,27 @@
+stages:
+  - build
+
+variables:
+  VERSION: "1.0.$CI_PIPELINE_ID"
+
+build-backend-pwsh:
+  stage: build
+
+  tags:
+    - windows
+    - powershell
+  script:
+    - echo "Авторизация в GitLab Registry..."
+    - docker login -u "$CI_REGISTRY_USER" -p "$CI_REGISTRY_PASSWORD" "$CI_REGISTRY"
+    
+    - echo "Сборка Docker-образа бэкенда..."
+    - docker build --build-arg VERSION="$VERSION" -t "$CI_REGISTRY_IMAGE/momo-store-backend:$CI_COMMIT_SHA" -t "$CI_REGISTRY_IMAGE/momo-store-backend:latest" ./backend
+    
+    - echo "Публикация образов в реестр..."
+    - docker push "$CI_REGISTRY_IMAGE/momo-store-backend:$CI_COMMIT_SHA"
+    - docker push "$CI_REGISTRY_IMAGE/momo-store-backend:latest"
+    
+    # Команды для Nexus:
+    # - docker tag "$CI_REGISTRY_IMAGE/momo-store-backend:latest" "93.77.166.24:8081/akhatov-backend/backend:latest"
+    # - docker login -u "student" -p "1iRd|OjBGq9V" "93.77.166.24:8081"
+    # - docker push "93.77.166.24:8081/akhatov-backend/backend:latest"
