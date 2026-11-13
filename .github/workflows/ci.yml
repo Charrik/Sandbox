@@ -26,6 +26,9 @@ jobs:
     needs: version
     if: github.event.inputs.VERSION == '' 
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
     strategy:
       matrix:
         component: [backend, frontend]
@@ -61,7 +64,7 @@ jobs:
         uses: docker/metadata-action@v5
         with:
           images: |
-            ghcr.io/${{ github.repository_owner }}/sandbox-${{ matrix.component }}
+            ghcr.io/charrik/sandbox-${{ matrix.component }}
             ${{ vars.NEXUS_HOST }}/akhatovdi-${{ matrix.component }}-docker/sandbox-${{ matrix.component }}
           tags: |
             type=raw,value=${{ needs.version.outputs.version }}
