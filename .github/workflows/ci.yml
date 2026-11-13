@@ -90,7 +90,7 @@ jobs:
 
   deploy:
     needs: [version, build]
-    if: always() && (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/master' || github.event_name == 'workflow_dispatch') && needs.version.result == 'success'
+    #if: always() && (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/master' || github.event_name == 'workflow_dispatch') && needs.version.result == 'success'
     runs-on: ubuntu-latest
     environment: production
     steps:
