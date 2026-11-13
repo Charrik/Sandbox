@@ -2,10 +2,8 @@ version: '3.8'
 
 services:
   backend:
-    image: sandbox-backend:latest
+    image: ${IMAGE_REGISTRY}${REPOSITORY_BACKEND}:${IMAGE_TAG:-latest}
     container_name: sandbox-backend
-    env_file:
-      - .env
     ports:
       - "8081:8081"
     networks:
@@ -13,7 +11,7 @@ services:
     restart: unless-stopped
 
   frontend:
-    image: sandbox-frontend:latest
+    image: ${IMAGE_REGISTRY}${REPOSITORY_FRONTEND}:${IMAGE_TAG:-latest}
     container_name: sandbox-frontend
     ports:
       - "8888:8888"
