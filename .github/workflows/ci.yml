@@ -1,12 +1,10 @@
-name: CI/CD Pipeline
-
+name: CI/CD for sandbox
 on:
   push:
     branches: [ "**" ]
   workflow_dispatch:
     inputs:
       VERSION:
-        description: "Версия для повторного деплоя/отката (например, 20261111-101500). Пусто — собрать новую."
         required: false
         type: string
 
@@ -64,7 +62,7 @@ jobs:
         with:
           images: |
             ghcr.io/${{ github.repository_owner }}/sandbox-${{ matrix.component }}
-            ${{ vars.NEXUS_HOST }}/akhatovd-${{ matrix.component }}-docker/sandbox-${{ matrix.component }}
+            ${{ vars.NEXUS_HOST }}/akhatovdi-${{ matrix.component }}-docker/sandbox-${{ matrix.component }}
           tags: |
             type=raw,value=${{ needs.version.outputs.version }}
             type=sha,format=short
@@ -117,11 +115,12 @@ jobs:
           script: |
             cd /opt/sandbox/laba3
             
-            # Логин в Nexus для скачивания образов
             echo "${{ secrets.NEXUS_REPO_PASS }}" | docker login ${{ vars.NEXUS_HOST }} -u "${{ secrets.NEXUS_REPO_USER }}" --password-stdin
             
             docker compose pull
+            
             docker compose up -d --remove-orphans --force-recreate
+            
             docker image prune -f
             
             echo "Deployed version: ${{ needs.version.outputs.version }}"
