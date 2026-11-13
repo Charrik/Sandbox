@@ -99,12 +99,12 @@ jobs:
 
       - name: Create .env file for deployment
         run: |
-          echo "${{ secrets.APP_ENV_FILE }}" > .env
-          echo "IMAGE_REGISTRY=${{ vars.NEXUS_HOST }}" >> .env
-          echo "IMAGE_TAG=${{ needs.version.outputs.version }}" >> .env
-          echo "VERSION=${{ needs.version.outputs.version }}" >> .env
-          echo "REPOSITORY_BACKEND=/akhatov-docker-backend/sandbox-backend" >> .env
-          echo "REPOSITORY_FRONTEND=/akhatov-docker-frontend/sandbox-frontend" >> .env
+          echo "${{ secrets.APP_ENV_FILE }}" > src/.env
+          echo "IMAGE_REGISTRY=${{ vars.NEXUS_HOST }}" >> src/.env
+          echo "IMAGE_TAG=${{ needs.version.outputs.version }}" >> src/.env
+          echo "VERSION=${{ needs.version.outputs.version }}" >> src/.env
+          echo "REPOSITORY_BACKEND=/akhatov-docker-backend/sandbox-backend" >> src/.env
+          echo "REPOSITORY_FRONTEND=/akhatov-docker-frontend/sandbox-frontend" >> src/.env
 
       - name: Copy files to VM via SCP
         uses: appleboy/scp-action@v0.1.7
@@ -112,7 +112,7 @@ jobs:
           host: ${{ vars.VM_HOST }}
           username: ${{ secrets.VM_USER }}
           key: ${{ secrets.VM_SSH_KEY }}
-          source: "src/docker-compose.yaml,.env"
+          source: "src/docker-compose.yaml,src/.env"
           target: "/opt/sandbox/laba3"
           strip_components: 1
 
