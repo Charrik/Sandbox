@@ -26,6 +26,9 @@ jobs:
     needs: version
     if: github.event.inputs.VERSION == '' 
     runs-on: ubuntu-latest
+    concurrency:
+      group: build-${{ github.ref }}
+      cancel-in-progress: true
     permissions:
       contents: read
       packages: write
@@ -87,55 +90,3 @@ jobs:
           labels: ${{ steps.meta.outputs.labels }}
           cache-from: type=gha
           cache-to: type=gha,mode=max
-
-  deploy:
-    needs: [version, build]
-    #if: always() && (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/master' || github.event_name == 'workflow_dispatch') && needs.version.result == 'success'
-    runs-on: ubuntu-latest
-    environment: production
-    steps:
-      - name: Checkout repository
-        uses: actions/checkout@v4
-
-      - name: Create .env file for deployment
-        run: |
-          echo "${{ secrets.APP_ENV_FILE }}" > src/.env
-          echo "IMAGE_REGISTRY=${{ vars.NEXUS_HOST }}" >> src/.env
-          echo "IMAGE_TAG=${{ needs.version.outputs.version }}" >> src/.env
-          echo "VERSION=${{ needs.version.outputs.version }}" >> src/.env
-          echo "REPOSITORY_BACKEND=/akhatov-docker-backend/sandbox-backend" >> src/.env
-          echo "REPOSITORY_FRONTEND=/akhatov-docker-frontend/sandbox-frontend" >> src/.env
-
-      - name: Copy files to VM via SCP
-        uses: appleboy/scp-action@v0.1.7
-        with:
-          host: ${{ vars.VM_HOST }}
-          username: ${{ secrets.VM_USER }}
-          key: ${{ secrets.VM_SSH_KEY }}
-          source: "src/docker-compose.yaml,src/.env"
-          target: "/opt/sandbox/laba3"
-          strip_components: 1
-
-      - name: Deploy via SSH
-        uses: appleboy/ssh-action@v1.0.3
-        with:
-          host: ${{ vars.VM_HOST }}
-          username: ${{ secrets.VM_USER }}
-          key: ${{ secrets.VM_SSH_KEY }}
-          script: |
-            cd /opt/sandbox/laba3
-            
-            echo "${{ secrets.NEXUS_REPO_PASS }}" | docker login ${{ vars.NEXUS_HOST }} -u "${{ secrets.NEXUS_REPO_USER }}" --password-stdin
-            
-            docker compose pull
-            
-            docker compose up -d --remove-orphans --force-recreate
-            
-            docker image prune -f
-            
-            echo "Deployed version: ${{ needs.version.outputs.version }}"
-
-      - name: Health Check (Backend)
-        run: |
-          sleep 10
-          curl -f http://${{ vars.VM_HOST }}:8081/health || exit 1

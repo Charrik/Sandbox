@@ -1,0 +1,26 @@
+image:
+  registry: ghcr.io/charrik
+  tag: 20261113-082245
+
+backend:
+  replicas: 1
+  port: 8081
+  resources:
+    requests:
+      cpu: "100m"
+      memory: "128Mi"
+    limits:
+      cpu: "500m"
+      memory: "512Mi"
+
+frontend:
+  replicas: 1
+  port: 8888
+  nodePort: 30080
+  resources:
+    requests:
+      cpu: "100m"
+      memory: "128Mi"
+    limits:
+      cpu: "500m"
+      memory: "512Mi"
